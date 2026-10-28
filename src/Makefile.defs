@@ -182,6 +182,13 @@ LD_EXTRA_OPTS ?=
 
 # enable workaround for libssl 1.1+ to set shared mutex attribute
 LIBSSL_SET_MUTEX_SHARED ?= 1
+
+ifeq ($(OS), openbsd)
+# Force LIBSSL_SET_MUTEX_SHARED to be disabled: process-shared mutexes
+# are unsupported in OpenBSD's pthread implementation
+	override LIBSSL_SET_MUTEX_SHARED := 0
+endif
+
 ifneq ($(LIBSSL_SET_MUTEX_SHARED), 1)
 
 ifeq ($(CROSS_COMPILE),)
@@ -214,6 +221,8 @@ endif
 # is clarity on which require -ldl, add just enough ifeq to fix
 # systems known not to use it.
 ifeq ($(OS), netbsd)
+LIBDL=""
+else ifeq ($(OS), openbsd)
 LIBDL=""
 else
 LIBDL="-ldl"
@@ -2064,7 +2073,7 @@ ifeq ($(OS), openbsd)
 	# (symbols on openbsd are prefixed by "_")
 	YACC=yacc
 	# unfortunately pthread is needed for sigwait
-	LIBS= -lpthread
+	LIBS= -lpthread -lm
 endif   # if opensd
 
 ifeq ($(OS), netbsd)

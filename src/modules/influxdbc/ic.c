@@ -24,6 +24,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <string.h>
+#include <errno.h>
 #include <sys/errno.h>
 #include <sys/socket.h>
 #include <netinet/in.h>

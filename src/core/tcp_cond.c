@@ -48,12 +48,24 @@ int tcp_cond_init(tcp_cond_t *cond)
 		LM_ERR("failed to init mutex attributes\n");
 		return -1;
 	}
-	if(pthread_mutexattr_setpshared(&mattr, PTHREAD_PROCESS_SHARED) != 0
-#ifdef HAVE_PTHREAD_MUTEX_ROBUST
-			|| pthread_mutexattr_setrobust(&mattr, PTHREAD_MUTEX_ROBUST) != 0
+#ifdef KSR_PTHREAD_MUTEX_SHARED
+	if(pthread_mutexattr_setpshared(&mattr, PTHREAD_PROCESS_SHARED) != 0) {
+		LM_ERR("failed to set process-shared mutex attribute\n");
+		pthread_mutexattr_destroy(&mattr);
+		return -1;
+	}
 #endif
-			|| pthread_mutex_init(&cond->m, &mattr) != 0) {
-		LM_ERR("failed to set up process-shared mutex\n");
+
+#ifdef HAVE_PTHREAD_MUTEX_ROBUST
+	if(pthread_mutexattr_setrobust(&mattr, PTHREAD_MUTEX_ROBUST) != 0) {
+		LM_ERR("failed to set robust mutex attribute\n");
+		pthread_mutexattr_destroy(&mattr);
+		return -1;
+	}
+#endif
+
+	if(pthread_mutex_init(&cond->m, &mattr) != 0) {
+		LM_ERR("failed to init mutex\n");
 		pthread_mutexattr_destroy(&mattr);
 		return -1;
 	}
@@ -65,9 +77,17 @@ int tcp_cond_init(tcp_cond_t *cond)
 		pthread_mutex_destroy(&cond->m);
 		return -1;
 	}
-	if(pthread_condattr_setpshared(&cattr, PTHREAD_PROCESS_SHARED) != 0
-			|| pthread_cond_init(&cond->c, &cattr) != 0) {
-		LM_ERR("failed to set up process-shared cond\n");
+#ifdef KSR_PTHREAD_MUTEX_SHARED
+	if(pthread_condattr_setpshared(&cattr, PTHREAD_PROCESS_SHARED) != 0) {
+		LM_ERR("failed to set process-shared cond attribute\n");
+		pthread_condattr_destroy(&cattr);
+		pthread_mutex_destroy(&cond->m);
+		return -1;
+	}
+#endif
+
+	if(pthread_cond_init(&cond->c, &cattr) != 0) {
+		LM_ERR("failed to init cond\n");
 		pthread_condattr_destroy(&cattr);
 		pthread_mutex_destroy(&cond->m);
 		return -1;

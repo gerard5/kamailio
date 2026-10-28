@@ -39,6 +39,10 @@
 #include "../../core/rand/fastrand.h"
 #include "../../core/rand/fortuna/random.h"
 
+#if defined(LIBRESSL_VERSION_NUMBER) && !defined(KSRTLSVOID)
+#define KSRTLSVOID 1
+#endif
+
 /*
  * Implementation for tests with system library PNRG,
  * do not use this in production.
@@ -257,7 +261,11 @@ void ksr_kxlibssl_cleanup(void)
 }
 
 #ifdef KSRTLSVOID
+#if defined(LIBRESSL_VERSION_NUMBER)
+void ksr_kxlibssl_add(const void *buf, int num, double randomness)
+#else
 void ksr_kxlibssl_add(const void *buf, int num, int randomness)
+#endif
 {
 	ksr_kxlibssl_init();
 	if(_ksr_kxlibssl_local_lock == 0 || _ksr_kxlibssl_local_method == 0) {

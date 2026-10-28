@@ -173,6 +173,12 @@ if(NOT ${LIBSSL_SET_MUTEX_SHARED})
 
 endif()
 
+if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+  # Force LIBSSL_SET_MUTEX_SHARED to be disabled: process-shared mutexes are unsupported in
+  # OpenBSD's pthread implementation
+  set(LIBSSL_SET_MUTEX_SHARED OFF)
+endif()
+
 # -----------------------
 # Locking mechanism
 # -----------------------

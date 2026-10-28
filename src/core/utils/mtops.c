@@ -80,10 +80,12 @@ int ksr_sigsem_init(ksr_sigsem_t *sgs)
 		LM_ERR("pthread_mutexattr_init failed\n");
 		return -1;
 	}
+#ifdef KSR_PTHREAD_MUTEX_SHARED
 	if(pthread_mutexattr_setpshared(&mutexattr, PTHREAD_PROCESS_SHARED) != 0) {
 		LM_ERR("pthread_mutexattr_setpshared failed\n");
 		return -1;
 	}
+#endif
 	if(pthread_mutex_init(&sgs->mtx, &mutexattr) != 0) {
 		LM_ERR("pthread_mutex_init failed\n");
 		return -1;
@@ -93,10 +95,12 @@ int ksr_sigsem_init(ksr_sigsem_t *sgs)
 		LM_ERR("pthread_condattr_init failed\n");
 		return -1;
 	}
+#ifdef KSR_PTHREAD_MUTEX_SHARED
 	if(pthread_condattr_setpshared(&condattr, PTHREAD_PROCESS_SHARED) != 0) {
 		LM_ERR("pthread_condattr_setpshared failed\n");
 		return -1;
 	}
+#endif
 	if(pthread_cond_init(&sgs->cnd, &condattr) != 0) {
 		LM_ERR("pthread_cond_init failed\n");
 		return -1;

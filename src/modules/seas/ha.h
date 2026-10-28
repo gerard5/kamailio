@@ -25,7 +25,7 @@
 #ifndef HA_H
 #define HA_H
 #include "../../core/locking.h" /* for get_lock_t define*/
-#include <time.h>
+#include <sys/time.h>
 struct ping
 {
 	unsigned int id;

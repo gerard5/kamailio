@@ -87,7 +87,9 @@ int ksr_tls_lock_init(void)
 		return -1;
 	}
 	pthread_mutexattr_init(&attr);
+#ifdef KSR_PTHREAD_MUTEX_SHARED
 	pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+#endif
 	if(pthread_mutex_init(ksr_tls_lock_shm, &attr) != 0) {
 		pthread_mutexattr_destroy(&attr);
 		LM_ERR("mutex init failed\n");
@@ -720,8 +722,8 @@ int tls_pre_init(void)
 		}
 		LM_DBG("updated memory functions - malloc: %p realloc: %p free: %p\n",
 				ser_malloc, ser_realloc, ser_free);
-#endif /* LIBRESSL_VERSION_NUMBER */
 	}
+#endif /* LIBRESSL_VERSION_NUMBER */
 
 	if(tls_init_locks() < 0)
 		return -1;

@@ -58,6 +58,13 @@
 #include "tls_rand.h"
 #include "tls_ct_wrq.h"
 
+#if defined(LIBRESSL_VERSION_NUMBER) && !defined(CRYPTO_THREAD_get_current_id)
+/* LibreSSL fallback */
+#include <pthread.h>
+#define CRYPTO_THREAD_ID pthread_t
+#define CRYPTO_THREAD_get_current_id pthread_self()
+#endif
+
 #ifndef TLS_HOOKS
 #error "TLS_HOOKS must be defined, or the tls module won't work"
 #endif
@@ -397,7 +404,7 @@ static tls_domains_cfg_t* tls_use_modparams(void)
  */
 static void tls_atfork_prepare(void)
 {
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if (OPENSSL_VERSION_NUMBER >= 0x10100000L) && !defined(LIBRESSL_VERSION_NUMBER)
 	OPENSSL_thread_stop();
 #endif
 }
@@ -649,6 +656,12 @@ int tls_reload_engine_keys(void)
 	if(tls_fix_engine_keys(*tls_domains_cfg, &srv_defaults, &cli_defaults) < 0)
 		return -1;
 	LM_INFO("HSM/engine keys reloaded\n");
+	return 0;
+}
+#else
+/* LibreSSL/OpenBSD on no KSR_SSL_COMMON */
+int tls_reload_engine_keys(void)
+{
 	return 0;
 }
 #endif /* KSR_SSL_COMMON */
